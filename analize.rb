@@ -1,11 +1,13 @@
-# coding: utf-8
 require_relative './env.rb'
 require_relative './lookup.rb'
 require_relative './type_def.rb'
 
+
 def analize(block, lev)
+
   p = (block.class == Array) ? block[0] : block
   case p
+
   when Declaration
     if p.type != "int"
       puts "#{p.pos} error : declare type '#{p.type}' is not allowed."
@@ -33,7 +35,8 @@ def analize(block, lev)
         exit 1
       end
     end
-      
+
+    
   when Func_proto
     p_name = p.name.name[1].to_sym
     args = []
@@ -54,6 +57,7 @@ def analize(block, lev)
       puts "#{p.name.pos} error : function '#{p.name.name[1]}' type or parameter is defferent."
       exit 1
     end
+
     
   when Func_def
     f_name = p.name.name[1].to_sym
@@ -88,6 +92,7 @@ def analize(block, lev)
     end
     analize(p.statement, 1)
 
+    
   when Compound
     lev += 1
     $sem[lev] = {}
@@ -99,7 +104,8 @@ def analize(block, lev)
     p.statement_list.each do |stmt|
       analize(stmt, lev) if p.statement_list
     end
-      
+
+    
   when IF
     if analize(p.cond, lev) != "int"
       puts "#{p.pos} error : cond type is not allowed."
@@ -107,16 +113,15 @@ def analize(block, lev)
     end
     analize(p.statement, lev)
     analize(p.elsstatement, lev) if p.elsstatement != ';'
+
     
   when While
-    if p.cond == nil
-      puts "#{p.pos} error : cond is empty."   
-      exit 1
-    elsif analize(p.cond, lev) != "int"
-      puts "#{p.pos} error : cond type is not allowed."
+    if p.cond == nil || analize(p.cond, lev) != "int"
+      puts "#{p.pos} error : cond type is not allowed( or empty )."
       exit 1
     end
     analize(p.statement, lev)
+
     
   when Return
     type_error = "#{p.pos} error : 'function' and 'return' have defferent types."
@@ -132,15 +137,18 @@ def analize(block, lev)
       puts type_error; exit 1
     end
 
+    
   when DIGIT
     type = "int"
     return type
+
     
   when Binary
     type_error = "#{p.pos} error : lval and rval types are not allowed."
     type__error =  "#{p.pos} error : pointer type is not allowed as lval."
     ltype = analize(p.lval, lev)
     rtype = analize(p.rval, lev)
+
     case p.op
     when '+'
       if ltype == "int" && rtype == "int"
@@ -203,6 +211,7 @@ def analize(block, lev)
       end
     end
     return type
+
     
   when Unary
     valtype = analize(p.val, lev)
@@ -227,6 +236,7 @@ def analize(block, lev)
     end
     return type
 
+    
   when Refer
     r_name = p.name.to_sym
     refer_error = "#{p.pos} error : '#{p.name}' refer is not variable."
