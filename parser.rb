@@ -1,4 +1,7 @@
-# coding: utf-8
+# 
+# 構文解析メソッド MyParser#parse
+#
+
 class MyParser
 
 /* token: 終端記号 */
