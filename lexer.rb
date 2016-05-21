@@ -1,11 +1,17 @@
-# coding: utf-8
+#
+# 文字解析メソッドlexscan
+#
+
+
 def lexscan(filename)
+  
   tokens = []
   file = File.open(filename)
   file.each_line do |line| #ファイルの内容を一行ずつ読み込む
     regexp = /([\w]+|\+|-|\*|\/|>=|<=|>|<|\(|\)|\[|\]|\{|\}|==|=|!=|,|;|&&|&|\|\|)/
     ary = line.split(regexp).select {|s| !s.empty? }
     i = 0
+    
     ary.each do |obj|
       idx = line.index(ary[i])
       pos = "(l#{file.lineno}, #{idx})"
@@ -40,6 +46,7 @@ def lexscan(filename)
           token = "BLANK"
         end
       end
+      
       if token != "BLANK"
         tokens << token
       end
