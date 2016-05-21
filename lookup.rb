@@ -1,3 +1,7 @@
+#
+# 環境検索メソッドlookup
+#
+
 def lookup(key, lev)
   lev.downto(0) do |l|
     if $sem[l][key]
