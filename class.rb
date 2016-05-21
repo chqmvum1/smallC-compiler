@@ -1,4 +1,7 @@
-# coding: utf-8
+# 
+# クラス定義
+#
+
 class Declaration
   attr_accessor :type, :decl, :pos
   def initialize(type, decl, pos)
