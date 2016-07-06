@@ -3,7 +3,7 @@
 
 
 $labels = {}# ラベル名 => 場所
-
+$break = :false
 
 
 def sva(tree)
@@ -11,6 +11,7 @@ def sva(tree)
   pp $sem
 
   tree.each do |t|
+    
     if t.class == FunDef && t.body.class == CmpdStmt
       check_list = []# $semの代わり 一時変数も含めるため
       0.upto(2) do |lev|
@@ -70,11 +71,13 @@ def block_sva(idx, check_list, stmts)
       cmpd_check_list << d.var
     end
     cmpd_check_list.uniq!
-    
+    pp cmpd_check_list
     cmpd_stmts = stmts[idx].stmts
+    
     0.upto(cmpd_stmts.size) do |i|
       $vars[idx][i] = []
       cmpd_check_list.each do |env|
+        $break = :false if $break == :true
         in_flag = used?(env, i, cmpd_stmts.size, cmpd_stmts) #CmpdStmt内部
         if in_flag == :true
           if env.lev == 99
@@ -83,32 +86,40 @@ def block_sva(idx, check_list, stmts)
             $vars[idx][i] << [env.name, env.lev]
           end
         end
-        check_list.each do |c|
-          if env.name == c.name && env.lev == c.lev + 1
-            env = c
+
+        if in_flag == :unknown
+          check_list.each do |c|
+            if env.name == c.name && env.lev == c.lev + 1
+              env = c
+            end
+          end
+          out_flag = used?(env, idx + 1, stmts.size, stmts) #CmpdStmt外部
+          if out_flag == :true
+            if env.lev == 99
+              $vars[idx][i] << env.name
+            else
+              $vars[idx][i] << [env.name, env.lev]
+            end
           end
         end
-        out_flag = used?(env, idx + 1, stmts.size, stmts) #CmpdStmt外部
-        if out_flag == :true
-          if env.lev == 99
-            $vars[idx][i] << env.name
-          else
-            $vars[idx][i] << [env.name, env.lev]
-          end
-        end
+        
       end
+      $vars[idx][i].uniq!
     end
 
     
 
   else
     check_list.each do |env|
+      $break = :false if $break == :true
       flag = used?(env, idx, stmts.size, stmts)
       if flag == :true
         if env.lev == 99
           $vars[idx] << env.name
+          $vars[idx].uniq!
         else
           $vars[idx] << [env.name, env.lev]
+          $vars[idx].uniq!
         end
       end
     end
@@ -122,25 +133,30 @@ end
 
 def used?(env, from, to, stmts)
 
-  flag = :false
+  flag = :unknown
   
   from.upto(to) do |i|# 今見ている以降の文からスタート
-
-    if env.kind == :proto || env.kind == :fun
-      break
-    end
-
     
     case stmts[i]    
 
+        
+    when VarDecl
+      # none
+
+
+
+      
     when CmpdStmt
       now_env = env
       stmts[i].decls.each do |d|
         now_env = d.var if d.var.name == env.name
       end
       flag = used?(now_env, 0, stmts[i].stmts.size, stmts[i].stmts)
-        
-        
+      break if flag == :true
+      next if flag == :unknown
+
+
+
       
     when IfStmt
       if stmts[i].var.name == env.name ||
@@ -159,6 +175,7 @@ def used?(env, from, to, stmts)
 
 
       
+      
     when LabelStmt
       if stmts[i].name.name == env.name
         flag = :true
@@ -167,6 +184,7 @@ def used?(env, from, to, stmts)
 
       
 
+      
     when GotoStmt
       if stmts[i].label.name == env.name
         flag = :true
@@ -177,12 +195,35 @@ def used?(env, from, to, stmts)
           flag = used?(env, $labels[label], stmts.size, stmts)
           break
         else
-          flag = used?(env, $labels[label], i - 1, stmts)
-          break
+          if $break == :false
+            $break = :true
+            flag = used?(env, $labels[label], i, stmts)
+            break
+          else# $break == :true のとき
+            break
+          end
         end
-      end  
+      end
+
+      
+      
 
 
+    when CallStmt, Func_call, PrintStmt
+      flag = :true
+      break
+
+
+
+      
+
+    when RoadStmt, WriteStmt
+      flag = :true
+      break
+
+      
+
+      
       
     when AssignStmt
       if stmts[i].var.name == env.name # 使われる前に更新(代入)されている
@@ -202,8 +243,12 @@ def used?(env, from, to, stmts)
             flag = :true
             break
           end
+        when AddrExp
+          flag = :true
+          break
         end
       end
+
 
       
       
@@ -215,8 +260,8 @@ def used?(env, from, to, stmts)
     end
 
     
-
   end
   
   return flag
+  
 end
