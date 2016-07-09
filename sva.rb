@@ -209,18 +209,65 @@ def used?(env, from, to, stmts)
       
 
 
-    when CallStmt, Func_call, PrintStmt
-      flag = :true
-      break
+    when CallStmt
+      if stmts[i].dest.name == env.name ||
+         stmts[i].tgt.name == env.name
+        flag = :true
+      elsif stmts[i].vars.class == Array
+        stmts[i].vars.each do |a|
+          if a.name == env.name
+            flag = :true
+            break
+          end
+        end
+      end
+      break if flag == :true
+      
+        
+
+
+    when Func_call
+      if stmts[i].name.name == env.name
+        flag = :true
+      elsif stmts[i].arg.class == Array
+        stmts[i].arg.each do |a|
+          if a.name == env.name
+            flag = :true
+            break
+          end
+        end
+      end
+      break if flag == :true
+      
+
+      
+      
+    when PrintStmt
+      if stmts[i].var.name == env.name
+        flag = :true
+        break
+      end
+      
+      
+
+      
+
+    when RoadStmt
+      if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
+        flag = :true
+        break
+      end
+
 
 
 
       
-
-    when RoadStmt, WriteStmt
-      flag = :true
-      break
-
+    when WriteStmt
+      if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
+        flag = :true
+        break
+      end
+      
       
 
       

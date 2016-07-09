@@ -66,13 +66,11 @@ def remove(tree)
 
             if stmts[i + 1].class == CmpdStmt
               $vars[i + 1].each do |ary|
-                if ary.class == Array
-                  ary.each do |v|
-                    if v == stmts[i].var.name ||
-                       v.class == Array && v[0] == stmts[i].var.name && v[1] == stmts[i].var.lev
-                      flag = :use
-                      break
-                    end
+                ary.each do |v|
+                  if v == stmts[i].var.name ||
+                     v.class == Array && v[0] == stmts[i].var.name && v[1] == stmts[i].var.lev
+                    flag = :use
+                    break
                   end
                 end
               end
@@ -101,6 +99,9 @@ def remove(tree)
         end
         
       end
+      
+      pp $flags
+
 
 
       stmts = t.body.stmts
@@ -110,17 +111,27 @@ def remove(tree)
         if stmts[i].class == CmpdStmt
           stmts[i].stmts.each_with_index do |s, j|
             if $flags[i][j] == :not
-               stmts[i].stmts[j] = nil
+              pp stmts[i].stmts[j]
+              stmts[i].stmts[j] = nil
             end
           end
           
           
         else
           if $flags[i] == :not
-             stmts[i] = nil
+            pp stmts[i]
+            stmts[i] = nil
           end
         end
+        
       end
+      
+      
+      puts "before stmts size => #{stmts.size}"
+      stmts.compact!
+      puts " after stmts size => #{stmts.size}"
+
+      
     end
     
   end
