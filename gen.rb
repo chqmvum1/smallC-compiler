@@ -1,5 +1,7 @@
 # coding: utf-8
 
+
+
 def lev_check(com, reg, env)
   
   if env.class == LitExp
@@ -20,6 +22,7 @@ def gen(block)
 
   p = (block.class == Array) ? block[0] : block
 
+  
   case p
 
   when VarDecl    
@@ -30,6 +33,7 @@ def gen(block)
     end
 
     
+
 
     
   when FunDef
@@ -59,6 +63,7 @@ def gen(block)
 
     
 
+    
   when AssignStmt
     case p.exp#右辺
     when Env
@@ -84,6 +89,7 @@ def gen(block)
     
     $code << lev_check('sw', 't0', p.var)#左辺   
 
+    
 
     
     
@@ -92,6 +98,7 @@ def gen(block)
     $code << lev_check('lw', 't0', p.src)
     $code << "     sw   $t0, 0($t1)"
 
+    
 
 
     
@@ -100,6 +107,7 @@ def gen(block)
     $code << "     lw   $t1, 0($t0)"
     $code << lev_check('sw', 't1', p.dest)    
 
+    
 
     
 
@@ -109,9 +117,11 @@ def gen(block)
 
 
     
+    
   when GotoStmt
     $code << "     j    #{p.label.name}"
 
+    
 
     
     
@@ -119,6 +129,7 @@ def gen(block)
     $code <<  lev_check('lw', 't0', p.var)
     $code << "     beqz $t0, #{p.elabel.label.name}"
     $code << "     j    #{p.tlabel.label.name}"
+
 
     
       
@@ -139,6 +150,7 @@ def gen(block)
 
     
 
+    
   when Func_call   
     if p.arg == :void
       # none
@@ -153,6 +165,7 @@ def gen(block)
 
 
     
+    
 
   when RetStmt
     $code << lev_check('lw', 'v0', p.var)
@@ -162,10 +175,12 @@ def gen(block)
     $code << '     jr   $ra'
     
 
+    
 
     
   when CmpdStmt
     p.stmts.each {|s| gen(s) }
+
 
 
     

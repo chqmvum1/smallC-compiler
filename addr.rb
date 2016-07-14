@@ -2,9 +2,11 @@
 
 def addr(block)
 
+  
   p = (block.class == Array) ? block[0] : block
   case p
 
+      
   when FunDef
     p.parms.each do |parm|
       parm.offset = $p_offset
@@ -17,7 +19,9 @@ def addr(block)
     $max_offset = $p_offset
     addr(p.body)
   
-  
+
+
+    
   when CmpdStmt
     if p.decls
       p.decls.each do |decl|
@@ -33,8 +37,11 @@ def addr(block)
     p.stmts.each do |stmt|
       addr(stmt)
     end
+
+
     
   else
     #none
   end
+  
 end

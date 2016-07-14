@@ -1,9 +1,9 @@
+# coding: utf-8
 #
-#type配列の文字列化&型検査
+# type配列の文字列化&型検査
 #
 
 def type_def(env_type, pos)
-  
   if env_type[0] == :array
     if env_type[1][0] == "void"
       puts "#{pos} error : 'void' is not allowed as array type."
@@ -27,6 +27,5 @@ def type_def(env_type, pos)
       type = env_type[0][0] + '*'
     end
   end
-  
   return type
 end

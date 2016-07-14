@@ -47,7 +47,9 @@ def analize(block, lev)
       end
     end
 
+
     
+
     
   when Func_proto
 
@@ -72,6 +74,8 @@ def analize(block, lev)
       puts "#{p.name.pos} error : function '#{p.name.name[1]}' type or parameter is defferent."
       exit 1
     end
+
+
 
 
     
@@ -114,6 +118,8 @@ def analize(block, lev)
     analize(p.statement, 1)
 
 
+
+    
     
   when Compound
 
@@ -131,6 +137,8 @@ def analize(block, lev)
     end
 
 
+
+    
     
   when IF
 
@@ -142,6 +150,8 @@ def analize(block, lev)
     analize(p.elsstatement, lev) if p.elsstatement != ';'
 
 
+
+    
     
   when While
 
@@ -151,6 +161,8 @@ def analize(block, lev)
     end
     analize(p.statement, lev)
 
+
+    
     
     
   when Return
@@ -167,12 +179,16 @@ def analize(block, lev)
     end
     
 
+
+    
     
   when DIGIT
     type = "int"
     return type
 
     
+
+
     
   when Binary, Assign
 
@@ -247,6 +263,8 @@ def analize(block, lev)
 
 
     
+
+    
   when Unary
 
     valtype = analize(p.val, lev)
@@ -274,6 +292,8 @@ def analize(block, lev)
     return type
 
     
+
+
     
   when Refer, Func_call
 

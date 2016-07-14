@@ -266,8 +266,6 @@ end
          end
          ir(block)
        end
-       sva($mid)
-       remove($mid)
        
        $code = ["    .data",
                 "line_break: .asciiz \"\\n\"",

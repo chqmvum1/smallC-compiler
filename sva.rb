@@ -8,8 +8,6 @@ $break = :false
 
 def sva(tree)
 
-  pp $sem
-
   tree.each do |t|
     
     if t.class == FunDef && t.body.class == CmpdStmt
@@ -24,7 +22,6 @@ def sva(tree)
         check_list << d.var
       end
       check_list.uniq!
-      pp check_list
       
       scope = t.body.stmts.size# - 1
       
@@ -34,7 +31,7 @@ def sva(tree)
           $labels[key] =  i# ラベルの位置を格納
         end
       end
-      pp $labels
+
 
       0.upto(scope) do |i|
         block_sva(i, check_list, t.body.stmts)# 現在の本文の位置、環境に登録されている変数リスト、及び複文全体が引数
@@ -43,8 +40,9 @@ def sva(tree)
     else
       # none
     end
-    pp $vars
   end
+
+  
 end
 
 
@@ -71,7 +69,6 @@ def block_sva(idx, check_list, stmts)
       cmpd_check_list << d.var
     end
     cmpd_check_list.uniq!
-    pp cmpd_check_list
     cmpd_stmts = stmts[idx].stmts
     
     0.upto(cmpd_stmts.size) do |i|
@@ -134,181 +131,183 @@ end
 def used?(env, from, to, stmts)
 
   flag = :unknown
-  
-  from.upto(to) do |i|# 今見ている以降の文からスタート
-    
-    case stmts[i]    
+  if from.class == Fixnum && to.class == Fixnum
+    from.upto(to) do |i|# 今見ている以降の文からスタート
+      
+      case stmts[i]    
+          
+          
+      when VarDecl
+      # none
+        
+        
+        
+        
+      when CmpdStmt
+        now_env = env
+        stmts[i].decls.each do |d|
+          now_env = d.var if d.var.name == env.name
+        end
+        flag = used?(now_env, 0, stmts[i].stmts.size, stmts[i].stmts)
+        break if flag == :true
+        next if flag == :unknown
+
+
 
         
-    when VarDecl
-      # none
-
-
-
-      
-    when CmpdStmt
-      now_env = env
-      stmts[i].decls.each do |d|
-        now_env = d.var if d.var.name == env.name
-      end
-      flag = used?(now_env, 0, stmts[i].stmts.size, stmts[i].stmts)
-      break if flag == :true
-      next if flag == :unknown
-
-
-
-      
-    when IfStmt
-      if stmts[i].var.name == env.name ||
-         stmts[i].tlabel.label.name == env.name ||
-         stmts[i].elabel.label.name == env.name
-        flag = :true
-        break
-      else
-        tlabel = stmts[i].tlabel.label.name.to_sym
-        elabel = stmts[i].elabel.label.name.to_sym
-        tflag = used?(env, $labels[tlabel], stmts.size, stmts)
-        eflag = used?(env, $labels[elabel], stmts.size, stmts)
-        flag = :true if tflag == :true || eflag == :true
-        break
-      end
-
-
-      
-      
-    when LabelStmt
-      if stmts[i].name.name == env.name
-        flag = :true
-        break
-      end
-
-      
-
-      
-    when GotoStmt
-      if stmts[i].label.name == env.name
-        flag = :true
-        break
-      else
-        label = stmts[i].label.name.to_sym
-        if $labels[label] > i
-          flag = used?(env, $labels[label], stmts.size, stmts)
+      when IfStmt
+        if stmts[i].var.name == env.name ||
+           stmts[i].tlabel.label.name == env.name ||
+           stmts[i].elabel.label.name == env.name
+          flag = :true
           break
         else
-          if $break == :false
-            $break = :true
-            flag = used?(env, $labels[label], i, stmts)
-            break
-          else# $break == :true のとき
-            break
+          tlabel = stmts[i].tlabel.label.name.to_sym
+          elabel = stmts[i].elabel.label.name.to_sym
+          tflag = used?(env, $labels[tlabel], stmts.size, stmts)
+          eflag = used?(env, $labels[elabel], stmts.size, stmts)
+          flag = :true if tflag == :true || eflag == :true
+          break
+        end
+
+
+        
+        
+      when LabelStmt
+        if stmts[i].name.name == env.name
+          flag = :true
+          break
+        end
+
+        
+
+        
+      when GotoStmt
+        if stmts[i].label.name == env.name
+          flag = :true
+          break
+        else
+          label = stmts[i].label.name.to_sym
+          if $labels[label].class == Fixnum && i.class == Fixnum
+            if $labels[label] > i
+              flag = used?(env, $labels[label], stmts.size, stmts)
+              break
+            else
+              if $break == :false
+                $break = :true
+                flag = used?(env, $labels[label], i, stmts)
+                break
+              else# $break == :true のとき
+                break
+              end
+            end
           end
         end
-      end
 
-      
-      
-
-
-    when CallStmt
-      if stmts[i].dest.name == env.name ||
-         stmts[i].tgt.name == env.name
-        flag = :true
-      elsif stmts[i].vars.class == Array
-        stmts[i].vars.each do |a|
-          if a.name == env.name
-            flag = :true
-            break
-          end
-        end
-      end
-      break if flag == :true
-      
+        
         
 
 
-    when Func_call
-      if stmts[i].name.name == env.name
-        flag = :true
-      elsif stmts[i].arg.class == Array
-        stmts[i].arg.each do |a|
-          if a.name == env.name
+      when CallStmt
+        if stmts[i].dest.name == env.name ||
+           stmts[i].tgt.name == env.name
+          flag = :true
+        elsif stmts[i].vars.class == Array
+          stmts[i].vars.each do |a|
+            if a.name == env.name
+              flag = :true
+              break
+            end
+          end
+        end
+        break if flag == :true
+        
+        
+
+
+      when Func_call
+        if stmts[i].name.name == env.name
+          flag = :true
+        elsif stmts[i].arg.class == Array
+          stmts[i].arg.each do |a|
+            if a.name == env.name
+              flag = :true
+              break
+            end
+          end
+        end
+        break if flag == :true
+        
+
+        
+        
+      when PrintStmt
+        if stmts[i].var.name == env.name
+          flag = :true
+          break
+        end
+        
+        
+
+        
+
+      when RoadStmt
+        if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
+          flag = :true
+          break
+        end
+
+
+
+
+        
+      when WriteStmt
+        if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
+          flag = :true
+          break
+        end
+        
+        
+
+        
+        
+      when AssignStmt
+        if stmts[i].var.name == env.name # 使われる前に更新(代入)されている
+          flag = :false
+          break
+        else        
+          case stmts[i].exp
+          when Env
+            expr = stmts[i].exp
+            if expr.name == env.name
+              flag = :true
+              break
+            end
+          when AopExp, RopExp
+            expr = stmts[i].exp
+            if expr.left.name == env.name || expr.right.name == env.name
+              flag = :true
+              break
+            end
+          when AddrExp
             flag = :true
             break
           end
         end
-      end
-      break if flag == :true
-      
-
-      
-      
-    when PrintStmt
-      if stmts[i].var.name == env.name
-        flag = :true
-        break
-      end
-      
-      
-
-      
-
-    when RoadStmt
-      if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
-        flag = :true
-        break
-      end
 
 
-
-
-      
-    when WriteStmt
-      if stmts[i].dest.name == env.name || stmts[i].src.name == env.name
-        flag = :true
-        break
-      end
-      
-      
-
-      
-      
-    when AssignStmt
-      if stmts[i].var.name == env.name # 使われる前に更新(代入)されている
-        flag = :false
-        break
-      else        
-        case stmts[i].exp
-        when Env
-          expr = stmts[i].exp
-          if expr.name == env.name
-            flag = :true
-            break
-          end
-        when AopExp, RopExp
-          expr = stmts[i].exp
-          if expr.left.name == env.name || expr.right.name == env.name
-            flag = :true
-            break
-          end
-        when AddrExp
+        
+        
+      when RetStmt
+        if stmts[i].var.name == env.name
           flag = :true
           break
         end
       end
 
-
       
-      
-    when RetStmt
-      if stmts[i].var.name == env.name
-        flag = :true
-        break
-      end
     end
-
     
+    return flag
   end
-  
-  return flag
-  
 end

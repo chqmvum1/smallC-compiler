@@ -4,12 +4,14 @@
 #
 
 
+
 class VarDecl
   attr_accessor :var
   def initialize(var)
     @var = var
   end
 end
+
 
 
 
@@ -24,6 +26,7 @@ end
 
 
 
+
 class AssignStmt
   attr_accessor :var, :exp
   def initialize(var, exp)
@@ -31,6 +34,7 @@ class AssignStmt
     @exp = exp
   end
 end
+
 
 
 
@@ -44,6 +48,7 @@ end
 
 
 
+
 class RoadStmt
   attr_accessor :dest, :src
   def initialize(dest, src)
@@ -54,12 +59,14 @@ end
 
 
 
+
 class LabelStmt
   attr_accessor :name
   def initialize(name)
     @name  = name
   end
 end
+
 
 
 
@@ -74,12 +81,14 @@ end
 
 
 
+
 class GotoStmt
   attr_accessor :label
   def initialize(label)
     @label = label
   end
 end
+
 
 
 
@@ -94,6 +103,7 @@ end
 
 
 
+
 class RetStmt
   attr_accessor :var
   def initialize(var)
@@ -103,12 +113,14 @@ end
 
 
 
+
 class PrintStmt
   attr_accessor :var
   def initialize(var)
     @var = var
   end
 end
+
 
 
 
@@ -122,6 +134,7 @@ end
 
 
 
+
 #class VarExp
 #  attr_accessor :var
 #  def initialize(var)
@@ -131,12 +144,14 @@ end
 
 
 
+
 class LitExp
   attr_accessor :val
   def initialize(val)
     @val = val
   end
 end
+
 
 
 
@@ -151,6 +166,7 @@ end
 
 
 
+
 class RopExp
   attr_accessor :op, :left, :right
   def initialize(op, left, right)
@@ -159,6 +175,7 @@ class RopExp
     @right  = right
   end
 end
+
 
 
 

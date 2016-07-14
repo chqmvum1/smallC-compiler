@@ -4,6 +4,7 @@
 #
 
 
+
 class Declaration
   attr_accessor :type, :decl, :pos
   def initialize(type, decl, pos)
@@ -12,6 +13,7 @@ class Declaration
     @pos  = pos
   end
 end
+
 
 
 
@@ -26,6 +28,7 @@ end
 
 
 
+
 class Func_proto
   attr_accessor :type, :name, :arg, :pos
   def initialize(type, name, arg, pos)
@@ -35,6 +38,7 @@ class Func_proto
     @pos  = pos
   end
 end
+
 
 
 
@@ -51,6 +55,7 @@ end
 
 
 
+
 class Compound
   attr_accessor :decl_list, :statement_list, :pos
   def initialize(decl_list, statement_list, pos)
@@ -59,6 +64,7 @@ class Compound
     @pos = pos
   end
 end
+
 
 
 
@@ -74,6 +80,7 @@ end
 
 
 
+
 class While
   attr_accessor :cond, :statement, :pos
   def initialize(cond, statement, pos)
@@ -85,6 +92,7 @@ end
 
 
 
+
 class Return
   attr_accessor :expression, :pos
   def initialize(expression, pos)
@@ -92,6 +100,7 @@ class Return
     @pos    = pos
   end
 end
+
 
 
 
@@ -107,6 +116,7 @@ end
 
 
 
+
 class Binary
   attr_accessor :op, :lval, :rval, :pos
   def initialize(op, lval, rval, pos)
@@ -116,6 +126,7 @@ class Binary
     @pos  = pos
   end
 end
+
 
 
 
@@ -130,6 +141,7 @@ end
 
 
 
+
 class Func_call
   attr_accessor :name, :arg, :pos
   def initialize(name, arg, pos)
@@ -138,6 +150,7 @@ class Func_call
     @pos  = pos
   end
 end
+
 
 
 
@@ -152,6 +165,7 @@ end
 
 
 
+
 class ID
   attr_accessor :name, :pos
   def initialize(name, pos)
@@ -159,6 +173,7 @@ class ID
     @pos  = pos
   end
 end  
+
 
 
 
