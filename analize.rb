@@ -8,6 +8,9 @@ require_relative './lookup.rb'
 require_relative './type_def.rb'
 
 
+
+
+
 def analize(block, lev)
 
   
@@ -19,8 +22,7 @@ def analize(block, lev)
   when Declaration
     
     if p.type != "int"
-      puts "#{p.pos} error : declare type '#{p.type}' is not allowed."
-      exit 1
+      error "error: #{p.pos} declare type '#{p.type}' is not allowed."
     end
     
     $sem[lev] = {} if $sem[lev] == nil
@@ -31,7 +33,7 @@ def analize(block, lev)
       type = [p.type, elem[0]]
       if $sem[lev][d_name] == nil
         if $sem[1][d_name]
-          puts "#{elem[1].pos} warning : '#{elem[1].name}' is already declared."
+          puts "warning: #{elem[1].pos} '#{elem[1].name}' is already declared."
         end
         case elem[1]
         when ID
@@ -42,8 +44,7 @@ def analize(block, lev)
           elem[1] = $sem[lev][d_name]#名前変換
         end
       else
-        puts "#{elem[1].pos} error : '#{elem[1].name}' is already declared."
-        exit 1
+        error "error: #{elem[1].pos} '#{elem[1].name}' is already declared."
       end
     end
 
@@ -59,8 +60,7 @@ def analize(block, lev)
 
     p.arg.each do |a|
       if a[0] != "int"
-        puts "#{a[1].pos} error : type '#{a[0]}' is not allowed as a parameter."
-        exit 1
+        error "error: #{a[1].pos} type '#{a[0]}' is not allowed as a parameter."
       end
       args << [a[0], a[1].name[0]]
     end
@@ -71,8 +71,7 @@ def analize(block, lev)
     elsif $sem[lev][p_name].kind == :proto && $sem[lev][p_name].type == type ||
           $sem[lev][p_name].kind == :fun && $sem[lev][p_name].type == type
     else
-      puts "#{p.name.pos} error : function '#{p.name.name[1]}' type or parameter is defferent."
-      exit 1
+      error "error: #{p.name.pos} function '#{p.name.name[1]}' type or parameter is defferent."
     end
 
 
@@ -94,8 +93,7 @@ def analize(block, lev)
       p.name = $sem[0][f_name]#名前変換
          $ftype = type[0]
     else
-      puts "#{p.name.pos} error : function '#{p.name.name[1]}' is redefined or defferent parameter."
-      exit 1
+      error "error: #{p.name.pos} function '#{p.name.name[1]}' is redefined or defferent parameter."
     end
 
     $sem[1] = {} if $sem[1] == nil
@@ -104,15 +102,13 @@ def analize(block, lev)
       a_name = a[1].name[1].to_sym
       type = [a[0], a[1].name[0]]
       if type[0] != "int"
-        puts "#{a[1].pos} error : type '#{a[0]}' is not allowed as a parameter."
-        exit 1
+        error "error: #{a[1].pos} type '#{a[0]}' is not allowed as a parameter."
       end
       if $sem[1][a_name] == nil
         $sem[1][a_name] = Env.new(a_name, 1, :parm, type)
         a[1] = $sem[1][a_name]#名前変換
          else
-          puts "#{a[1].pos} error : parameter '#{a[1].name[1]}' is redeclared."
-          exit 1
+          error "error: #{a[1].pos} parameter '#{a[1].name[1]}' is redeclared."
       end
     end
     analize(p.statement, 1)
@@ -143,8 +139,7 @@ def analize(block, lev)
   when IF
 
     if analize(p.cond, lev) != "int"
-      puts "#{p.pos} error : cond type is not allowed."
-      exit 1
+      error "error: #{p.pos} cond type is not allowed."
     end
     analize(p.statement, lev)
     analize(p.elsstatement, lev) if p.elsstatement != ';'
@@ -156,8 +151,7 @@ def analize(block, lev)
   when While
 
     if p.cond == nil || analize(p.cond, lev) != "int"
-      puts "#{p.pos} error : cond type is not allowed( or empty )."
-      exit 1
+      error "error: #{p.pos} cond type is not allowed( or empty )."
     end
     analize(p.statement, lev)
 
@@ -167,15 +161,15 @@ def analize(block, lev)
     
   when Return
 
-    type_error = "#{p.pos} error : 'function' and 'return' have defferent types."
+    type_error = "error: #{p.pos} 'function' and 'return' have defferent types."
     type = (p.expression == nil) ? "void" : analize(p.expression, lev)
 
     if $ftype[0] == "void" && p.expression
-      puts type_error; exit 1
+      error type_error
     end
     ftype = type_def([$ftype], p.pos)
     if ftype != type
-      puts type_error; exit 1
+      error type_error
     end
     
 
@@ -192,8 +186,8 @@ def analize(block, lev)
     
   when Binary, Assign
 
-    type_error = "#{p.pos} error : lval and rval types are not allowed."
-    type__error =  "#{p.pos} error : pointer type is not allowed as lval."
+    type_error = "error: #{p.pos} lval and rval types are not allowed."
+    type__error =  "error: #{p.pos} pointer type is not allowed as lval."
     ltype = analize(p.lval, lev)
     rtype = analize(p.rval, lev)
 
@@ -207,7 +201,7 @@ def analize(block, lev)
       elsif (ltype == "int**" && rtype == "int") || (ltype == "int" && rtype == "int**")
         type = "int**"
       else
-        puts type_error; exit 1
+        error type_error
       end
     when '-'
       if ltype == "int" && rtype == "int"
@@ -217,46 +211,42 @@ def analize(block, lev)
       elsif ltype == "int**" && rtype == "int*"
         type = "int**"
       else
-        puts type_error; exit 1
+        error type_error
       end
     when '*', '/', '==', '!=', '<', '>', '<=', '>='
       if ltype == rtype
         type = "int"
       else
-        puts type_error; exit 1
+        error type_error
       end
     when '='
       if rtype == ltype
         type = ltype
       else
-        puts "#{p.lval.pos} error : left type '#{ltype}', right type '#{rtype}' is not allowed."
-        exit 1
+        error "error: #{p.lval.pos} left type '#{ltype}', right type '#{rtype}' is not allowed."
       end
       case p.lval
       when Unary
         if  p.lval.op != '*'
-          puts type__error; exit 1
+          error type__error
         end
       when Refer
         l_name = p.lval.name.name
         env = lookup(l_name, lev)
         if env.class != Env
-          puts "#{p.pos} error : '#{p.name}' undeclared variable or function."
-          exit 1
+          error "error: #{p.pos} '#{p.name}' undeclared variable or function."
         end
         if ( env.kind != :var && env.kind != :parm ) || env.type[0] != "int"
-          puts "#{p.lval.pos} error : '#{env.name}' is not val(parameter) or integer."
-          exit 1
+          error "error: #{p.lval.pos} '#{env.name}' is not val(parameter) or integer."
         end
       else
-        puts "#{p.lval.pos} error : lval is not variable."
-        exit 1
+        error "error: #{p.lval.pos} lval is not variable."
       end
     when '&&', '||'
       if ltype == 'int' && rtype == 'int'
         type = "int"
       else
-        puts type_error; exit 1
+        error type_error
       end
     end
     return type
@@ -274,8 +264,7 @@ def analize(block, lev)
       if  p.val.class == Refer && p.val.arg == :val && valtype == "int"
         type = "int*"
       else
-        puts "#{p.pos} error : address type is not allowed."
-        exit 1
+        error "error: #{p.pos} address type is not allowed."
       end
     when '*'
       case valtype
@@ -284,8 +273,7 @@ def analize(block, lev)
       when "int**"
         type = "int*"
       else
-        puts "#{p.pos} error : pointer type is not allowed."
-        exit 1
+        error "error: #{p.pos} pointer type is not allowed."
       end
     end
     
@@ -298,13 +286,12 @@ def analize(block, lev)
   when Refer, Func_call
 
     r_name = p.name.to_sym
-    refer_error = "#{p.pos} error : '#{p.name}' refer is not variable."
-    parm_error = "#{p.pos} error : function parameter is defferent."
+    refer_error = "error: #{p.pos} '#{p.name}' refer is not variable."
+    parm_error = "error: #{p.pos} function parameter is defferent."
     env = lookup(r_name, lev)
 
     if env.class != Env
-      puts "#{p.pos} error : '#{p.name}' undeclared variable or function."
-      exit 1
+      error "error: #{p.pos} '#{p.name}' undeclared variable or function."
     else
       if p.arg == :val
         if env.kind == :var || env.kind == :parm
@@ -314,36 +301,45 @@ def analize(block, lev)
             type = type_def([env.type], p.pos)
           end
         else
-          puts refer_error; exit 1
+          error refer_error
         end
       elsif env.kind == :proto || env.kind == :fun
         if p.arg == :void
           if env.type[1][0] != nil
-            puts  "#{p.pos} error : function '#{p.name}' type is void."
-            exit 1
+            error  "error: #{p.pos} function '#{p.name}' type is void."
           end
           type = type_def(env.type, p.pos)
         elsif p.arg.class == Array
           if env.type[1].size != p.arg.size
-            puts parm_error; exit 1
+            error parm_error
           else
             p.arg.each_with_index do |arg, i|
               argType = analize(arg, lev)
               defType = type_def([env.type[1][i]], p.pos)
               if argType != defType
-                puts parm_error; exit 1
+                error parm_error
               end
             end
             type = type_def(env.type, p.pos)
           end
         end
       else
-        puts "#{p.pos} error : '#{p.name}' refer to defferent kind name."
-        exit 1
+        error "error: #{p.pos} '#{p.name}' refer to defferent kind name."
         analize(p.arg, lev)
       end
       p.name = env#名前変換
       return type
     end
+  end
+end
+
+
+
+def error message
+  begin
+    exit 1
+  rescue SystemExit => e
+    $stderr.puts message
+    exit 1
   end
 end

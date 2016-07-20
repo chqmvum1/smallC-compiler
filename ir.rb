@@ -134,7 +134,6 @@ def ir(block)
           stmts << AssignStmt.new(t11, RopExp.new(p.cond.rval.op, t9, t10))
           stmts << AssignStmt.new(t0, RopExp.new(p.cond.op, t8, t11))
         else
-          pp p.cond
           t7 = var_gen()
           t8 = var_gen()
           decls << t7 << t8
@@ -326,15 +325,24 @@ def ir(block)
       stmts << RetStmt.new(t0)
     end
     return {decls: decls, stmts: stmts}
+
+
+
     
     
   when DIGIT
     return {decls: [], stmts: LitExp.new(p.name)}
 
+
+
+    
     
   when Refer
     return {decls: [], stmts: p.name}
 
+
+
+    
     
   when Assign
     if p.lval.class == Refer && p.rval.class == Unary#<dest> = *<src>
@@ -515,6 +523,45 @@ def ir(block)
             stmts << AssignStmt.new(right, LitExp.new(p.arg[0].rval.name))
             stmts << AssignStmt.new(t0, RopExp.new(p.arg[0].op, left, right))
             stmts << PrintStmt.new(t0)
+          elsif p.arg[0].lval.class == Binary && p.arg[0].lval.lval.class == DIGIT
+            t0 = var_gen()
+            t1 = var_gen()
+            t2 = var_gen()
+            left = var_gen()
+            right = var_gen()
+            decls << t0 << t1 << t2 << left << right
+            stmts << AssignStmt.new(t1, LitExp.new(p.arg[0].lval.lval.name))
+            stmts << AssignStmt.new(t2, LitExp.new(p.arg[0].lval.rval.name))
+            stmts << AssignStmt.new(left, AopExp.new(p.arg[0].lval.op, t1, t2))
+            stmts << AssignStmt.new(right, LitExp.new(p.arg[0].rval.name))
+            stmts << AssignStmt.new(t0, RopExp.new(p.arg[0].op, left, right))
+            stmts << PrintStmt.new(t0)
+          elsif p.arg[0].lval.class == Binary && p.arg[0].rval.class == Binary &&
+                p.arg[0].lval.lval.class == Binary && p.arg[0].lval.lval.lval.class == Refer
+            t0 = var_gen()
+            t1 = var_gen()
+            t2 = var_gen()
+            t3 = var_gen()
+            t4 = var_gen()
+            t5 = var_gen()
+            t6 = var_gen()
+            t7 = var_gen()
+            t8 = var_gen()
+            left = var_gen()
+            right = var_gen()
+            decls << t0 << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8 << left << right
+            stmts << AssignStmt.new(t1, p.arg[0].lval.lval.lval.name)
+            stmts << AssignStmt.new(t2, p.arg[0].lval.lval.rval.name)
+            stmts << AssignStmt.new(t3, AopExp.new(p.arg[0].lval.lval.op, t1, t2))
+            stmts << AssignStmt.new(t4, LitExp.new(p.arg[0].lval.rval.name))
+            stmts << AssignStmt.new(left, RopExp.new(p.arg[0].lval.op, t3, t4))
+            stmts << AssignStmt.new(t5, p.arg[0].rval.lval.lval.name)
+            stmts << AssignStmt.new(t6, p.arg[0].rval.lval.rval.name)
+            stmts << AssignStmt.new(t7, AopExp.new(p.arg[0].rval.lval.op, t5, t6))
+            stmts << AssignStmt.new(t8, LitExp.new(p.arg[0].rval.rval.name))
+            stmts << AssignStmt.new(right, RopExp.new(p.arg[0].rval.op, t7, t8))
+            stmts << AssignStmt.new(t0, RopExp.new(p.arg[0].op, left, right))
+            stmts << PrintStmt.new(t0)
           else
             t0 = var_gen()
             left = var_gen()
@@ -569,7 +616,12 @@ def ir(block)
     end
     return {decls: decls, stmts: stmts}
 
+
+    
   else
     return {decls: [], stmts: []}
+
+
   end
+  
 end

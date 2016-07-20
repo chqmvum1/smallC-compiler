@@ -930,7 +930,7 @@ end   # class MyParser
          gen(block)
        end
 
-        pp $code
+        puts $code
        
        File.open("#{ARGV[0]}".chop!, 'w') do |f|
          $code.each do |c|

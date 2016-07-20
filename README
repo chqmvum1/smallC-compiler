@@ -1,0 +1,39 @@
+# coding: utf-8
+
+#
+# READ ME
+#
+
+
+
+コンパイル方法 => "./compier ファイル名"
+
+
+
+例1. basic/arith.sc
+
+bash-3.2$ ./compiler basic/arith.sc
+["    .data",
+ "line_break: .asciiz \"\\n\"",
+ "L0:",
+ "    .text",
+ "    .globl main",
+ "ff:",
+ "     addi $sp, $sp, -40  #  ff",
+ "     sw   $fp, 0($sp)",
+ "     sw   $ra, 4($sp)",
+ "     addi $fp, $sp, 24",
+ "     sw   $a0, 4($fp)",
+ "     sw   $a1, 8($fp)",
+ "     sw   $a2, 12($fp)",
+
+ ... 以下略
+]
+
+
+
+例2. err/type01.sc
+
+bash-3.2$ ./compiler err/type01.sc 
+(l2, 10) error : 'function' and 'return' have defferent types.
+
